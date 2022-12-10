@@ -1,8 +1,11 @@
 def readlines():
+    print("-->")
     lines = []
     while True:
-        try: 
-            lines.append(input())
+        try:
+            line = input()
+            if len(line) > 0:
+                lines.append(line)
         except EOFError:
             break
     
