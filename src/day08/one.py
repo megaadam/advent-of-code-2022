@@ -15,15 +15,6 @@ def get_grid(lines):
         
     return grid
 
-def row(grid, r):
-    return grid[r]
-
-def col(grid, c):
-    col = []
-    for row in grid:
-        col.append(row[c])
-    return col
-
 def columns(grid):
     # return the input rows of trees as columns of trees
     columns = []
@@ -67,8 +58,6 @@ def test():
     grid = get_grid(lines)
     print("grid()", grid)
 
-    print("row(3)", row(grid, 3))
-    print("col(3)", col(grid, 3))
     print("edge_count()", edge_count(grid))
     print("columns(grid)", columns(grid))
     print("inside_count(grid)", inside_count(grid))
