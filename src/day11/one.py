@@ -27,6 +27,7 @@ def get_monkey_action(lines):
     for line in lines:
         if line.startswith('Monkey' ):
             monkey = {}
+            monkey["count"] = 0
             num = int(extract(line, 'Monkey ', ':'))
             assert num == len(monkeys) # will need a dict if false
 
@@ -57,9 +58,35 @@ def get_monkey_action(lines):
 
     return monkeys
 
+def run_monkey_action(monkeys):
+    for monkey in monkeys:
+        for item in monkey['items']:
+            # Operation
+            if monkey["op"][0] == '*':
+                item *= monkey["op"][1]
+            elif monkey["op"][0] == '+':
+                item += monkey["op"][1]
+            else:
+                item *= item
 
+            # Bored
+            item //= 3
 
-def test():
+            # Divisible & Throw
+            if item % monkey['divisor'] == 0:
+                monkeys[monkey['true_monkey']]["items"].append(item)
+            else:
+                monkeys[monkey['false_monkey']]["items"].append(item)
+
+            monkey["items"] = monkey["items"][1:]
+            monkey['count'] += 1
+
+def monkey_business(monkeys):
+    counts = [monkey['count'] for monkey in monkeys if monkey['count'] > 0]
+    top_monkeys = sorted(counts, reverse=True)
+    return top_monkeys[0] * top_monkeys[1]
+
+def test(external=False):
     lines = [
     'Monkey 0:',
     '  Starting items: 79, 98',
@@ -89,7 +116,22 @@ def test():
 
     print(items(' 54, 65, 75, 74'))
     print(items('42'))
-    print(get_monkey_action(lines))
+    if(external):
+        lines = util.readlines()
+
+    monkeys = get_monkey_action(lines)
+    print(monkeys)
+
+    for _ in range(20):
+        run_monkey_action(monkeys)
+
+    print('..................................')
+
+    print(monkeys)
+
+    print('..................................')
+    print(monkey_business(monkeys))
+
 ########################
 # https://adventofcode.com/2022/day/9
 
