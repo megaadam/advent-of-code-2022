@@ -135,7 +135,7 @@ def test(external=False):
 ########################
 # https://adventofcode.com/2022/day/9
 
-test()
+test(True)
 
 # lines = util.readlines()
 
