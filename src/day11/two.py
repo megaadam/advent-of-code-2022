@@ -5,9 +5,6 @@ import util
 def extract(str, before, after):
     return(str[str.rfind(before)+len(before):str.find(after)])
 
-def head_to(str, pat):
-    return str[str.find(pat)]
-
 def tail_from(str, pat):
     return str[str.rfind(pat)+len(pat):]
 
@@ -39,8 +36,6 @@ def exprs(tail):
 
     return exprs
 
-MAXINDEX = 0
-
 def divisible(expr, div):
     start = expr.cutoffs.get(div,1)
     if start == 1:
@@ -50,7 +45,7 @@ def divisible(expr, div):
 
     for i, op in enumerate(expr.exprs[start:]):
         if i > 187:
-            # CRAZY stuff! magic number found through experimenting on tha actual data set
+            # CRAZY stuff! magic number found through experimenting on the actual data set
             return False
             
         if val % div == 0:
@@ -167,9 +162,6 @@ def test(external=False):
     print(monkey_business(monkeys))
 
 ########################
-# https://adventofcode.com/2022/day/9
+# https://adventofcode.com/2022/day/11#part2
 
 test(True)
-
-# lines = util.readlines()
-

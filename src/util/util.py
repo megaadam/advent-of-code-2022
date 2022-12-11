@@ -10,3 +10,6 @@ def readlines():
             break
     
     return lines
+
+def extract(str, before, after):
+    return(str[str.rfind(before)+len(before):str.find(after)])
