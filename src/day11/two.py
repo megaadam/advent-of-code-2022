@@ -11,7 +11,7 @@ def head_to(str, pat):
 def tail_from(str, pat):
     return str[str.rfind(pat)+len(pat):]
 
-keys = ['items', 'op', 'true_monkey', 'false_monkey', 'exprs']
+keys = ['op', 'true_monkey', 'false_monkey', 'exprs']
 
 def items(tail):
     tokens = tail.split(', ')
@@ -21,22 +21,35 @@ def items(tail):
 
     return items
 
+class ExpressionList:
+    __slots__ = ['exprs', 'cutoffs']
+
+    def __init__(self):
+        self.exprs = []
+        # map of cutoff indexes keyed by divisor
+        self.cutoffs = {}
+
 def exprs(tail):
     tokens = tail.split(', ')
-    items= []
+    exprs = []
     for token in tokens:
-        items.append([int(token)])
+        el = ExpressionList()
+        el.exprs = [int(token)]
+        exprs.append(el)
 
-    return items
+    return exprs
 
 def divisible(expr, div):
-    val = expr[0]
-    for i, op in enumerate(expr[1:]):
+    start = expr.cutoffs.get(div,1)
+    if start == 1:
+        val = expr.exprs[0]
+    else:
+        val = 0
+
+    for i, op in enumerate(expr.exprs[start:]):
         if val % div == 0:
-            if i + 1 == len(expr):
-                return True
-            else:
-                val = 0
+            expr.cutoffs[div] = i + start
+            val = 0
         
         if op[0] == "+":
             val += op[1]
@@ -48,8 +61,6 @@ def divisible(expr, div):
     return val % div == 0
 
 
-
-
 def get_monkey_action(lines):
     monkeys = []
 
@@ -57,12 +68,10 @@ def get_monkey_action(lines):
         if line.startswith('Monkey' ):
             monkey = {}
             monkey['count'] = 0
-            monkey['exprs'] = []
             num = int(extract(line, 'Monkey ', ':'))
             assert num == len(monkeys) # will need a dict if false
 
         elif ('Starting items: ') in line:
-            monkey['items'] = items(tail_from(line, 'items: '))
             monkey['exprs'] = exprs(tail_from(line, 'items: '))
 
         elif 'Operation: new = old ' in line:
@@ -91,29 +100,17 @@ def get_monkey_action(lines):
 
 def run_monkey_action(monkeys):
     for monkey in monkeys:
-        for ix, item in enumerate(monkey['items']):
-            # Operation
-            # if monkey["op"][0] == '*':
-            #     item *= monkey["op"][1]
-            # elif monkey["op"][0] == '+':
-            #     item += monkey["op"][1]
-            # else:
-            #     item *= item
-
-            # Divisible & Throw 
-            expr = monkey["exprs"][0]
-            expr.append(monkey['op'])
+        for expr in monkey['exprs']:
+            # Op & Divisible & Throw
+            expr.exprs.append(monkey['op'])
 
             if divisible(expr, monkey['divisor']):
-                monkeys[monkey['true_monkey']]['items'].append(item)
                 monkeys[monkey['true_monkey']]['exprs'].append(expr)
 
             else:
-                monkeys[monkey['false_monkey']]['items'].append(item)
                 monkeys[monkey['false_monkey']]['exprs'].append(expr)
 
-            monkey["items"] = monkey["items"][1:]
-            monkey["exprs"] = monkey["exprs"][1:]
+            monkey['exprs'] = monkey['exprs'][1:]
             monkey['count'] += 1
 
 def monkey_business(monkeys):
@@ -156,7 +153,7 @@ def test(external=False):
 
     monkeys = get_monkey_action(lines)
 
-    for _ in range(10000):
+    for i in range(10000):
         run_monkey_action(monkeys)
     print([m['count'] for m in monkeys])
 
@@ -166,7 +163,7 @@ def test(external=False):
 ########################
 # https://adventofcode.com/2022/day/9
 
-test(True)
+test(False)
 
 # lines = util.readlines()
 
