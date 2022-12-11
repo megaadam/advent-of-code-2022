@@ -5,6 +5,7 @@ from util import readlines
 
 lines = readlines()
 
+print("\n\ndef test():")
 print("    lines = [")
 for line in lines:
     print(f"    '{line}',",)
