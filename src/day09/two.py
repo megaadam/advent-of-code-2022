@@ -58,65 +58,42 @@ class Engine:
     def tailtrail(self):
         self.trail.add(self.knots[len(self.knots)-1].get())
 
-    def planck_ortho(self, pull):
-        # True only if Planck distance is exceeded
-        xdiff = abs(self.knots[pull].x - self.knots[pull-1].x) > 1
-        ydiff = abs(self.knots[pull].y - self.knots[pull-1].y) > 1
+    def planck_pull(self):
+        for i in range(1, len(self.knots)):
+            xdiff = abs(self.knots[i].x - self.knots[i-1].x)
+            ydiff = abs(self.knots[i].y - self.knots[i-1].y)
 
-        return xdiff != ydiff 
+            if xdiff > 1 and ydiff > 1:
+                self.knots[i].x += (self.knots[i-1].x - self.knots[i].x)/2
+                self.knots[i].y += (self.knots[i-1].y - self.knots[i].y)/2           
 
-    def planck_diag(self, pull):
-        xdiff = abs(self.knots[pull].x - self.knots[pull-1].x)
-        ydiff = abs(self.knots[pull].y - self.knots[pull-1].y)
+            elif xdiff > 1: 
+                self.knots[i].y = self.knots[i-1].y
+                self.knots[i].x += (self.knots[i-1].x - self.knots[i].x)/2
 
-        return xdiff + ydiff > 2
+            elif ydiff > 1: 
+                self.knots[i].x = self.knots[i-1].x
+                self.knots[i].y += (self.knots[i-1].y - self.knots[i].y)/2
 
     def run_moves(self, moves):
         for move in moves:
-            for _ in range(move[1]):
+            for step in range(0, move[1]):
                 if move[0] == 'U':
                     self.knots[0].y += 1
-                    self.minmax()
-                    for i in range(1, len(self.knots)):
-                        if self.planck_ortho(i):
-                            self.knots[i].x = self.knots[i-1].x
-                            self.knots[i].y += 1
-                        elif self.planck_diag(i):
-                            self.knots[i].y = self.knots[i-1].y
-                        self.tailtrail()
 
                 elif move[0] == 'D':
                     self.knots[0].y -= 1
-                    self.minmax()
-                    for i in range(1, len(self.knots)):
-                        if self.planck_ortho(i):
-
-                            self.knots[i].x = self.knots[i-1].x
-                            self.knots[i].y -= 1
-                            self.tailtrail()
-
+                    
                 elif move[0] == 'L':
                     self.knots[0].x -= 1
-                    self.minmax()
-                    for i in range(1, len(self.knots)):
-                        if self.planck_ortho(i):
-
-                            self.knots[i].y = self.knots[i-1].y
-                            self.knots[i].x -= 1
-                            self.tailtrail()
-
 
                 else:
                     self.knots[0].x += 1
-                    self.minmax()
-                    for i in range(1, len(self.knots)):
-                        if self.planck_ortho(i):
 
-                            self.knots[i].y = self.knots[i-1].y
+                self.minmax()
+                self.planck_pull()
+                self.tailtrail()
 
-                            self.knots[i].x += 1
-                            self.tailtrail()
-            self.render_moves()
             pass
 
 
@@ -130,7 +107,6 @@ class Engine:
             print()
 
         print('\n\n')
-#def test_print_trail(engine):
 
 
 def test():
@@ -145,18 +121,6 @@ def test():
     'U 20',
     ]
 
-    lines = [
-    'R 4',
-    'U 2', # U4
-    'L 3',
-    'D 1',
-    'R 4',
-    'D 1',
-    'L 5',
-    'R 2',
-    ]
-
-
     moves = get_moves(lines)
     print(moves)
 
@@ -169,13 +133,10 @@ def test():
 ########################
 # https://adventofcode.com/2022/day/9#part2
 
-test()
+#test()
 
-#lines = util.readlines()
-#moves = get_moves(lines)
-#engine = Engine()
-#engine.run_moves(moves)
-
-
-
-#print(len(engine.trail))
+lines = util.readlines()
+moves = get_moves(lines)
+engine = Engine()
+engine.run_moves(moves)
+print(len(engine.trail))
