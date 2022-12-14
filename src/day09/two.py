@@ -38,6 +38,16 @@ class Engine:
     def H(self):
         return self.knots[0]
 
+    def knot_val(self, x,y):
+        for i, knot in enumerate(self.knots):
+            if x==self.knots[i].x and y==self.knots[i].y:
+                if i==0:
+                    return 'H'
+                else:
+                    return str(i)
+        
+        return '.'
+
     def minmax(self):
         # update minmax for trail render
         self.minx = min(self.minx, self.H().x)
@@ -48,14 +58,18 @@ class Engine:
     def tailtrail(self):
         self.trail.add(self.knots[len(self.knots)-1].get())
 
-    def planck_distance(self, pull, vertical=False):
+    def planck_ortho(self, pull):
         # True only if Planck distance is exceeded
-        if vertical == False and abs(self.knots[pull].x - self.knots[pull-1].x) > 1:
-            return True
-        if vertical and abs(self.knots[pull].y - self.knots[pull-1].y) > 1:
-            return True
+        xdiff = abs(self.knots[pull].x - self.knots[pull-1].x) > 1
+        ydiff = abs(self.knots[pull].y - self.knots[pull-1].y) > 1
 
-        return False
+        return xdiff != ydiff 
+
+    def planck_diag(self, pull):
+        xdiff = abs(self.knots[pull].x - self.knots[pull-1].x)
+        ydiff = abs(self.knots[pull].y - self.knots[pull-1].y)
+
+        return xdiff + ydiff > 2
 
     def run_moves(self, moves):
         for move in moves:
@@ -64,17 +78,20 @@ class Engine:
                     self.knots[0].y += 1
                     self.minmax()
                     for i in range(1, len(self.knots)):
-                        if self.planck_distance(i, True):
-                            # self.tailx = self.headx
+                        if self.planck_ortho(i):
+                            self.knots[i].x = self.knots[i-1].x
                             self.knots[i].y += 1
-                            self.tailtrail()
+                        elif self.planck_diag(i):
+                            self.knots[i].y = self.knots[i-1].y
+                        self.tailtrail()
 
                 elif move[0] == 'D':
                     self.knots[0].y -= 1
                     self.minmax()
                     for i in range(1, len(self.knots)):
-                        if self.planck_distance(i, True):
-                            # self.taily = self.heady
+                        if self.planck_ortho(i):
+
+                            self.knots[i].x = self.knots[i-1].x
                             self.knots[i].y -= 1
                             self.tailtrail()
 
@@ -82,7 +99,9 @@ class Engine:
                     self.knots[0].x -= 1
                     self.minmax()
                     for i in range(1, len(self.knots)):
-                        if self.planck_distance(i):
+                        if self.planck_ortho(i):
+
+                            self.knots[i].y = self.knots[i-1].y
                             self.knots[i].x -= 1
                             self.tailtrail()
 
@@ -91,9 +110,14 @@ class Engine:
                     self.knots[0].x += 1
                     self.minmax()
                     for i in range(1, len(self.knots)):
-                        if self.planck_distance(i):
+                        if self.planck_ortho(i):
+
+                            self.knots[i].y = self.knots[i-1].y
+
                             self.knots[i].x += 1
                             self.tailtrail()
+            self.render_moves()
+            pass
 
 
     def render_moves(self):
@@ -102,13 +126,10 @@ class Engine:
 
         for y in reversed(range(height + 1)):
             for x in range(width+1):
-                if x + self.minx == 0 and y + self.miny == 0:
-                    print('s', end='')
-                if(x + self.minx, y + self.miny) in self.trail:
-                    print('#', end='')
-                else:
-                    print('.', end='')
+                print(self.knot_val(x+self.minx, y+self.miny), end='')
             print()
+
+        print('\n\n')
 #def test_print_trail(engine):
 
 
@@ -123,6 +144,18 @@ def test():
     'L 25',
     'U 20',
     ]
+
+    lines = [
+    'R 4',
+    'U 2', # U4
+    'L 3',
+    'D 1',
+    'R 4',
+    'D 1',
+    'L 5',
+    'R 2',
+    ]
+
 
     moves = get_moves(lines)
     print(moves)
