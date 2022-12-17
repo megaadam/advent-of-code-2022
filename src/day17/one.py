@@ -131,8 +131,8 @@ def merge(pit, shape, shape_x, shape_y):
         for ix, cell in enumerate(shape_line):
             if pit[shape_y+iy][shape_x+ix] and cell:
                 assert False, "Merge WTF"
-
-            pit[shape_y+iy][shape_x+ix] = cell
+            if cell:
+                pit[shape_y+iy][shape_x+ix] = cell
 
 
 def print_pit(pit, shape=[], shape_y=0):
