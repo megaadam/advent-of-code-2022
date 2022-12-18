@@ -202,25 +202,27 @@ def run_moves(target, wdith=7):
     height_cycle = []
     while True:
         h, diff= cyclical_loop(big_fact)
+        print('.', end='')
         height_cycle.append(diff)
         if len(height_cycle) % 2 == 0:
             l2 = len(height_cycle) // 2
             if height_cycle[l2:] == height_cycle[:l2]:
                 # height cycle now contains exactly two cycles
                 break
-    
+    print("cycle found: ", l2)
     c_len = len(height_cycle)
     acc_height = base_height # before cycle
-    cylcles_fit = (target - 1) // (c_len * big_fact)
+    cycles_fit = (target - 1) // (c_len * big_fact)
 
-    cycles_left = target - big_fact - cylcles_fit * len(height_cycle)
+    cycles_left = target - big_fact - cycles_fit * len(height_cycle)* big_fact
     c_height = sum(height_cycle)
-    cycle_block_height = cylcles_fit * c_height
+    cycle_block_height = cycles_fit * c_height
 
     pit = copy.deepcopy(base_pit)
     new_hight, _ = cyclical_loop(cycles_left)
 
     height = cycle_block_height + new_hight
+    print('height is: ', height)
 
     pass
 
@@ -239,7 +241,7 @@ def run_moves(target, wdith=7):
 
 
 
-target = 2022
+target = 1000000000000
 
 def test():
     print("raw moves", len(raw_moves))
