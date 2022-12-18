@@ -76,12 +76,12 @@ def megablock(block):
     xmin, xmax, ymin, ymax, zmin, zmax = minmax(blocks)
     megablock = set()
     for x in range(xmin,xmax+1):
-        for y in range(xmin,xmax+1):
+        for y in range(ymin,ymax+1):
             for z in range(zmin,zmax+1):
                 c = (x,y,z)
                 megablock.add(c)
     
-    print(f"megablock: {xmax-xmin} x {ymax-ymin} x {zmax-zmin} volume: {(xmax-xmin) * (ymax-ymin) * (zmax-zmin)}")
+    print(f"megablock: {xmax-xmin+1} x {ymax-ymin+1} x {zmax-zmin+1} volume: {(xmax-xmin+1) * (ymax-ymin+1) * (zmax-zmin+1)}")
     return megablock
 
 def find_hollow():
@@ -110,9 +110,20 @@ def get_non_extertior(ext, blocks):
 
         while exterior:
             c = exterior.pop()
-            connected = maybe_exterior.intersection(probe_set(c))
-            exterior.update(connected)
-            maybe_exterior = maybe_exterior.difference(connected)
+            pass
+
+            def probe_c(c):
+                nonlocal maybe_exterior, exterior
+
+                connected = maybe_exterior.intersection(probe_set(c))
+                maybe_exterior = maybe_exterior.difference(connected)
+                if c in maybe_exterior:
+                    maybe_exterior.remove(c)
+                    
+                for c in connected:
+                    probe_c(c)
+
+            probe_c(c)
                  
     recurse()
     return maybe_exterior
@@ -135,12 +146,12 @@ def get_exterior(blocks):
             if (xmax,y,z) in non_blocks:
                 outmost.add((xmax,y,z))
                 
-    for x in range (ymin, ymax+1):
+    for x in range (xmin, xmax+1):
         for z in range (zmin, zmax+1):
             if (x,ymin,z) in non_blocks:
                 outmost.add((x,ymin,z))
                 
-    for x in range (ymin, ymax+1):
+    for x in range (xmin, xmax+1):
         for z in range (zmin, zmax+1):
             if (x,ymin,z) in non_blocks:
                 outmost.add((x,ymax,z))
@@ -160,17 +171,30 @@ def get_exterior(blocks):
      
 
 
+def get_6():
+    # simplest shape of 6 cubes enclosing a hollow
+    b6 = set((
+        (1,2,2),
+        (3,2,2),
+        
+        (2,1,2),
+        (2,3,2),
 
+        (2,2,1),
+        (2,2,3),
+    ))
+
+    return b6
 
 def test():
     global blocks
-
-    find_hollow()
+#    blocks = get_6()
 
     ext = get_exterior(blocks)
     non_ext = get_non_extertior(ext, blocks)
     get_surface(blocks, non_ext)
     # 2516 your answer is too low
+    # 2542 your answer is too high
 
 lines = util.readlinesf('input')
 get_blocks(lines)
