@@ -119,6 +119,9 @@ def extend_pit(pit, shape, headroom=3, width=7):
             for _ in range(diff):
                 pit.insert(0, get_line())
             return pit
+        
+    
+    return pit
 
 def calc_height(pit):
     for iy,line in enumerate(pit):
@@ -127,7 +130,12 @@ def calc_height(pit):
 
     return 0
 
+tetris_deleted = 0
+
 def merge(pit, shape, shape_x, shape_y):
+    global tetris_deleted
+
+    reduce = 0
 
     for iy, shape_line in enumerate(shape):
         for ix, cell in enumerate(shape_line):
@@ -135,6 +143,13 @@ def merge(pit, shape, shape_x, shape_y):
                 assert False, "Merge WTF"
             if cell:
                 pit[shape_y+iy][shape_x+ix] = cell
+
+        if all(pit[shape_y+iy]) and reduce == 0:
+            reduce = shape_y+iy
+
+    # if reduce > 0:
+    #     tetris_deleted += len(pit) - reduce
+    #     del pit[reduce:]
 
     
 def print_pit(pit, shape=[], shape_y=0):
@@ -165,13 +180,12 @@ def run_moves(target, wdith=7):
     shape_x = 2
     shape_y = 0
 
-    last_height=0
-
+    old_height = 0
     big_fact = len(shapes) * len(raw_moves)
 
     def cyclical_loop(reps):
-        nonlocal pit, shape, shape_x, shape_y
-        old_height = calc_height(pit)
+        global tetris_deleted
+        nonlocal pit, shape, shape_x, shape_y, old_height
         for counter in range(reps):
             while(True):
                 move = next_move()
@@ -194,27 +208,32 @@ def run_moves(target, wdith=7):
                     pit = extend_pit(pit, shape)
                     # print_pit(pit, shape)
                     break
-        
-        return calc_height(pit), calc_height(pit) - old_height
 
-    base_height, _ = cyclical_loop(big_fact)
+        tot_height = tetris_deleted + calc_height(pit)
+        diff =  tot_height - old_height
+        old_height = tot_height
+        return tot_height, diff
+
+    shape_loop = 5  # nr of shapes
+    magical_cycle_start = 700 # value found through trial and error
+    base_height, _ = cyclical_loop(magical_cycle_start)
     base_pit = copy.deepcopy(pit) # save this
     height_cycle = []
     while True:
-        h, diff= cyclical_loop(big_fact)
-        print('.', end='')
+        h, diff= cyclical_loop(shape_loop)
+        print(diff,'', end='')
         height_cycle.append(diff)
         if len(height_cycle) % 2 == 0:
             l2 = len(height_cycle) // 2
-            if height_cycle[l2:] == height_cycle[:l2]:
+            if l2 > 1 and height_cycle[l2:] == height_cycle[:l2]:
                 # height cycle now contains exactly two cycles
                 break
     print("cycle found: ", l2)
     c_len = len(height_cycle)
     acc_height = base_height # before cycle
-    cycles_fit = (target - 1) // (c_len * big_fact)
+    cycles_fit = (target - magical_cycle_start) // c_len
 
-    cycles_left = target - big_fact - cycles_fit * len(height_cycle)* big_fact
+    cycles_left = target - magical_cycle_start - cycles_fit * c_len
     c_height = sum(height_cycle)
     cycle_block_height = cycles_fit * c_height
 
@@ -224,15 +243,8 @@ def run_moves(target, wdith=7):
     height = cycle_block_height + new_hight
     print('height is: ', height)
 
-    pass
+    pass # 7775568175471 is too high
 
-
-
-
-                
-
-
-        
         
 
 
@@ -249,8 +261,8 @@ def test():
 
 
 
-f = open('test_input', 'r')
-#f = open('input', 'r')
+#f = open('test_input', 'r')
+f = open('input', 'r')
 lines = f.readlines()
 raw_moves = lines[0].rstrip()
 test()
