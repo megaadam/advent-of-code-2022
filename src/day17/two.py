@@ -215,13 +215,12 @@ def run_moves(target, wdith=7):
         return tot_height, diff
 
     shape_loop = 5  # nr of shapes
-    magical_cycle_start = 700 # value found through experimenting
+    magical_cycle_start = len(raw_moves) * shape_loop # cycle will often start earlier but this should be safe
     base_height, _ = cyclical_loop(magical_cycle_start)
     base_pit = copy.deepcopy(pit) # save this
     height_diff_cycle = []
     while True:
         h, diff= cyclical_loop(shape_loop)
-        print(diff,'', end='')
         height_diff_cycle.append(diff)
         if len(height_diff_cycle) % 2 == 0:
             l2 = len(height_diff_cycle) // 2
@@ -242,14 +241,10 @@ def run_moves(target, wdith=7):
     height = cycle_block_height + new_hight
     print('height is: ', height)
 
-    pass # 7775568175471 is too high
+    pass 
 
-        
-
-
-    h = calc_height(pit)
-    print("Height: ", h)
-
+    # 7775568175471 is too high
+    # 1551274793060 is too low
 
 
 target = 1000000000000
@@ -260,8 +255,8 @@ def test():
 
 
 
-f = open('test_input', 'r')
-#f = open('input', 'r')
+#f = open('test_input', 'r')
+f = open('input', 'r')
 lines = f.readlines()
 raw_moves = lines[0].rstrip()
 test()
