@@ -147,9 +147,9 @@ def merge(pit, shape, shape_x, shape_y):
         if all(pit[shape_y+iy]) and reduce == 0:
             reduce = shape_y+iy
 
-    # if reduce > 0:
-    #     tetris_deleted += len(pit) - reduce
-    #     del pit[reduce:]
+    if reduce > 0:
+        tetris_deleted += len(pit) - reduce
+        del pit[reduce:]
 
     
 def print_pit(pit, shape=[], shape_y=0):
@@ -215,26 +215,25 @@ def run_moves(target, wdith=7):
         return tot_height, diff
 
     shape_loop = 5  # nr of shapes
-    magical_cycle_start = 700 # value found through trial and error
+    magical_cycle_start = 700 # value found through experimenting
     base_height, _ = cyclical_loop(magical_cycle_start)
     base_pit = copy.deepcopy(pit) # save this
-    height_cycle = []
+    height_diff_cycle = []
     while True:
         h, diff= cyclical_loop(shape_loop)
         print(diff,'', end='')
-        height_cycle.append(diff)
-        if len(height_cycle) % 2 == 0:
-            l2 = len(height_cycle) // 2
-            if l2 > 1 and height_cycle[l2:] == height_cycle[:l2]:
+        height_diff_cycle.append(diff)
+        if len(height_diff_cycle) % 2 == 0:
+            l2 = len(height_diff_cycle) // 2
+            if l2 > 1 and height_diff_cycle[l2:] == height_diff_cycle[:l2]:
                 # height cycle now contains exactly two cycles
                 break
-    print("cycle found: ", l2)
-    c_len = len(height_cycle)
-    acc_height = base_height # before cycle
-    cycles_fit = (target - magical_cycle_start) // c_len
+    print("cycle found: ", len(height_diff_cycle))
+    c_len = len(height_diff_cycle)
+    cycles_fit = (target - magical_cycle_start) // (c_len* shape_loop)
 
-    cycles_left = target - magical_cycle_start - cycles_fit * c_len
-    c_height = sum(height_cycle)
+    cycles_left = target - magical_cycle_start - cycles_fit * c_len * shape_loop
+    c_height = sum(height_diff_cycle)
     cycle_block_height = cycles_fit * c_height
 
     pit = copy.deepcopy(base_pit)
@@ -261,8 +260,8 @@ def test():
 
 
 
-#f = open('test_input', 'r')
-f = open('input', 'r')
+f = open('test_input', 'r')
+#f = open('input', 'r')
 lines = f.readlines()
 raw_moves = lines[0].rstrip()
 test()
