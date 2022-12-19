@@ -119,8 +119,12 @@ def get_non_extertior(ext, blocks):
                 maybe_exterior = maybe_exterior.difference(connected)
                 if c in maybe_exterior:
                     maybe_exterior.remove(c)
-                    
-                for c in connected:
+
+                cx = list(connected)
+                if len(cx) >2:
+                    cx.reverse()
+
+                for c in cx:
                     probe_c(c)
 
             probe_c(c)
@@ -130,7 +134,7 @@ def get_non_extertior(ext, blocks):
     pass
 
 def get_exterior(blocks):
-    # return non-exterior non-blocks
+    # return  outmost air-blocks
     non_blocks = megablock(blocks).difference(blocks)
     xmin, xmax, ymin, ymax, zmin, zmax = minmax(blocks)
 
@@ -153,7 +157,7 @@ def get_exterior(blocks):
                 
     for x in range (xmin, xmax+1):
         for z in range (zmin, zmax+1):
-            if (x,ymin,z) in non_blocks:
+            if (x,ymax,z) in non_blocks:
                 outmost.add((x,ymax,z))
                 
     for x in range (xmin, xmax+1):
@@ -190,8 +194,10 @@ def test():
     global blocks
 #    blocks = get_6()
 
+    mega = megablock(blocks)
     ext = get_exterior(blocks)
     non_ext = get_non_extertior(ext, blocks)
+    grand_tot = len(ext) + len(non_ext) + len(blocks)
     get_surface(blocks, non_ext)
     # 2516 your answer is too low
     # 2542 your answer is too high
