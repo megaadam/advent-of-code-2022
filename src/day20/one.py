@@ -15,7 +15,7 @@ class Node:
         node.prev = self
 
 class Circular:
-    __slots__ = ['head', 'nodes', 'circlen']
+    __slots__ = ['head', 'nodes', 'circlen', 'zeronode']
 
     def __init__(self, lines):
         self.nodes = []  # will maintain original order
@@ -33,9 +33,35 @@ class Circular:
             tail.append(node)
             tail = node
 
+            if node.val == 0:
+                self.zeronode = node
 
         tail.next = self.head  # close the circular list
         self.head.prev = tail
+
+    def lookahead(self, node, steps):
+
+        # convert steps to abs forward
+        if node.val >= 0:
+            steps = steps % (self.circlen+1)
+        else:
+            steps = self.circlen - (abs(node.val) % self.circlen)
+
+        look = node
+
+        for _ in range(steps):
+            look = look.next
+
+        return look.val
+
+
+    def sum123k(self):
+
+        s1k = self.lookahead(self.zeronode, 1000)
+        s2k = self.lookahead(self.zeronode, 2000)
+        s3k = self.lookahead(self.zeronode, 3000)
+
+        return s1k + s2k + s3k
 
 
     def move(self, node):
@@ -130,4 +156,5 @@ circular = Circular(lines)
 circular.run_moves()
 circular.print()
 
+print('Sum 123K: ', circular.sum123k())
 
