@@ -151,7 +151,7 @@ def test():
 # https://adventofcode.com/2022/day/20
 #test()
 
-lines = util.readlinesf('test_input')
+lines = util.readlinesf('input')
 circular = Circular(lines)
 circular.run_moves()
 circular.print()
