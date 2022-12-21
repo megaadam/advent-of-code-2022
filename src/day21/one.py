@@ -80,7 +80,7 @@ def get_monkeys(lines):
 
 # https://adventofcode.com/2022/day/20
 
-lines = util.readlinesf('test_input')
+lines = util.readlinesf('input')
 
 monkeys = get_monkeys(lines)
 print(monkeys)
