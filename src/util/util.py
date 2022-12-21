@@ -8,12 +8,12 @@ def readlines():
                 lines.append(line)
         except EOFError:
             break
-    
+
     return lines
 
 def readlinesf(f):
  with open(f) as file:
-    lines = [line.rstrip() for line in file]     
+    lines = [line.strip() for line in file]
     return lines
 
 def extract(str, before, after):
