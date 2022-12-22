@@ -18,3 +18,9 @@ def readlinesf(f):
 
 def extract(str, before, after):
     return(str[str.rfind(before)+len(before):str.find(after)])
+
+
+def readlinesf_ns(f): # readlinsf no lstrip
+    with open(f) as file:
+        lines = [line.rstrip() for line in file]
+        return lines
