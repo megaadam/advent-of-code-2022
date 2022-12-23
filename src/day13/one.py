@@ -25,11 +25,11 @@ def compare_node(v1, d1, v2, d2):
 
     if type(v1) == int and type(v2) == int:
         if v1 == v2:
-            return comp(d1, d2)
+            return 0
         return comp(v1, v2)
 
     if type(v1) == list and type(v2) == list:  # only empty lists will reach this point
-        return 0
+        return comp(d1, d2)
 
     if type(v1) == list:
         return -1
@@ -48,7 +48,6 @@ def walk_generator(l, d=0):
         for sub in l:
             yield from walk_generator(sub, d+1)
 
-        yield [], d
 
 def compare_walk(pair):
     # True  for <=
@@ -84,8 +83,11 @@ def count_pairs(pairs, p=False):
     for ix, pair in enumerate(pairs):
         if compare_walk(pair):
             if p:
-                print("==", ix, "==")
+                print("==", ix + 1, "==")
             sum += ix + 1
+        else:
+            if p:
+                print("- ", ix + 1, " -")
 
     print("GRAND TOTAL:", sum)
 
@@ -108,5 +110,27 @@ def get_pairs(lines):
 
     return pairs
 
+def Test():
+    l = [[[3],3,[3],3]]
+    r = [3,3,3]
+    print(compare_walk((l, r)))  # False
+    print(compare_walk((r, l)))  # True
 
-count_pairs(get_pairs(util.readlinesf('test_input')))
+    l = [[[3],3,[3],3]]
+    r = [[[[[3,3,3], 3]]]]
+    print(compare_walk((l, r))) # True
+    print(compare_walk((r, l))) # True
+
+
+    l=[[]]
+    r=[[[]]]
+    print(compare_walk((l, r))) # True
+    print(compare_walk((r, l))) # False
+
+
+Test()
+count_pairs(get_pairs(util.readlinesf('input')), p=True)
+
+# 6344 is wrong
+# 6544 is wrong
+# 6446 is wrong
