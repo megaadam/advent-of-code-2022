@@ -71,11 +71,37 @@ class Grid:
                     print(len(c), end='')
             print()
 
+        print('-------------------------------')
+
+    def from_four(self, x,y):
+        gl = len(self.grid[0])
+        gh = len(self.grid)
+
+        lx = (gl + x - 1) % gl # left from xy
+        rx = (gl + x + 1) % gl # right from
+        ay = (gh + y - 1) % gh # above
+        by = (gh + y + 1) % gh # below
+
+        res = set()
+        if Wind.RIGHT in self.grid[y][lx]:
+            res.add(Wind.RIGHT)
+
+        if Wind.LEFT in self.grid[y][rx]:
+            res.add(Wind.LEFT)
+
+        if Wind.UP in self.grid[by][x]:
+            res.add(Wind.UP)
+
+        if Wind.DOWN in self.grid[ay][x]:
+            res.add(Wind.DOWN)
+
+        return res
+
     def tick(self):
         ng = []
         for y, grid_line in enumerate(self.grid):
             ngl = []
-            for x, cell in enumerate/grid_line:
+            for x, cell in enumerate(grid_line):
                 nc = self.from_four(x, y)
                 ngl.append(nc)
             ng.append(ngl)
@@ -87,6 +113,9 @@ def test():
     lines = util.readlinesf('test_input')
     g = Grid(get_grid(lines))
     g.print()
+    g.tick()
+    g.tick()
+
 test()
 
 
