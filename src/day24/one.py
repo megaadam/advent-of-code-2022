@@ -11,7 +11,7 @@ from enum import Enum
 lines = []
 grid = []
 
-Wind = Enum('Wind', ['UP', 'DOWN', 'LEFT', 'RIGHT', 'WAIT', 'EXIT'])
+Wind = Enum('Wind', ['EXIT', 'DOWN',  'RIGHT',  'UP', 'LEFT', 'WAIT', ])
 
 MAXCOUNT = 999999999
 mincount = 4444
@@ -139,7 +139,7 @@ class Grid:
         if len(self.grid[self.y][self.x]) == 0:
             can.add(Wind.WAIT)
 
-        return can
+        return sorted(list(can), key=lambda e:e.value)
 
     def move(self, count = 1):
         global mincount
