@@ -147,6 +147,9 @@ class Grid:
             print("Done?")
             return count
 
+        if count > 32:
+            return count
+
         if len(moves) == 0:
             return 999999999
 
