@@ -105,7 +105,7 @@ class Grid:
         self.y = -1
         self.wx = len(self.grid[0])
         self.wy = len(self.grid)
-        self.time_nodes = [[TimeNode(0, -1, 0)]]
+        self.time_nodes = [[(0, -1, 0)]]
 
     def print(self):
         for y,gl in enumerate(self.grid):
@@ -185,8 +185,8 @@ class Grid:
     def can_moves3(self, node, time):
         can = []
 
-        if node.y == self.wy and node.x == self.wx:
-            can.add(Wind.EXIT)
+        if node.y == self.wy -1 and node.x == self.wx-1:
+            can.append(Wind.EXIT)
             return can
 
         if node.x < self.wx-1 and self.can_move_time(node.y, node.x + 1, time):
@@ -264,46 +264,42 @@ class Grid:
 
     def move2(self, count = 0):
         while True:
-            submoves = []
-            for node in self.time_nodes[-1]:
+            submoves = set()
+            for nt in self.time_nodes[-1]:
+                node = TimeNode(nt[0], nt[1])
+                ti = len(self.time_nodes)
                 #print("======= self.time_nodes[-1][0].y", self.time_nodes[-1][0].y, "node", nxx.y)
                 moves = self.can_moves3(node, len(self.time_nodes))
 
                 for move in moves:
                     if move == Wind.DOWN:
-                        submoves.append(TimeNode(node.x, node.y +1))
-                        print("DOWN, ", end = "")
+                        # submoves.add(TimeNode(node.x, node.y +1))
+                        submoves.add((node.x, node.y+1, ti))
 
                     elif move == Wind.RIGHT:
-                        submoves.append(TimeNode(node.x+1, node.y))
-                        print("RIGHT, ", end = "")
+                        # submoves.add(TimeNode(node.x+1, node.y))
+                        submoves.add((node.x+1, node.y,ti))
 
                     elif move == Wind.UP:
-                        submoves.append(TimeNode(node.x, node.y-1))
-                        print("UP, ", end = "")
-
+                        #submoves.add(TimeNode(node.x, node.y-1))
+                        submoves.add((node.x, node.y-1, ti))
 
                     elif move == Wind.LEFT:
-                        submoves.append(TimeNode(node.x-1, node.y))
-                        print("LEFT, ", end = "")
-
+                        # submoves.add(TimeNode(node.x-1, node.y))
+                        submoves.add((node.x-1, node.y,ti))
 
                     elif move == Wind.WAIT:
                         if len(self.time_nodes) == 0 or node.y > -1:
-                            submoves.append(TimeNode(node.x, node.y))
-                            print("WAIT, ", end = "")
+                            # submoves.add(TimeNode(node.x, node.y))
+                            submoves.add((node.x, node.y,ti))
 
                     elif move == Wind.EXIT:
-                        print("EXIT after moves: ", len(self.time_nodes)+1)
+                        print("EXIT after moves: ", len(self.time_nodes))
                         sys.exit(0)
                     else:
                         assert False, "WTF"
 
             self.time_nodes.append(submoves)
-            for sn in submoves:
-                print("x:", sn.x, "y:", sn.y, "---> ", end='')
-            print()
-
 
 
 
