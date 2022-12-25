@@ -3,18 +3,35 @@ sys.path.append('../util')
 import util
 
 import copy
-
+import time
 from enum import Enum
 
 # https://adventofcode.com/2022/day/24
 
 lines = []
 grid = []
+grid_loop = []
 
-Wind = Enum('Wind', ['EXIT', 'DOWN',  'RIGHT',  'UP', 'LEFT', 'WAIT', ])
+Wind = Enum('Wind', ['EXIT', 'RIGHT',  'DOWN',  'UP', 'LEFT', 'WAIT', ])
 
-MAXCOUNT = 999999999
-mincount = 4444
+MAXCOUNT = 995
+mincount = MAXCOUNT
+
+class TimeNode:
+    __slots__ = ['x', 'y', 'time', 'moves']
+
+    def __init__(self, x, y, time=0, moves=[]):
+        self.x = x
+        self.y = y
+        self.time = time
+        moves=moves
+
+
+
+def grid_at_time(t):
+    global grid_loop
+
+    return grid_loop[t%len(grid_loop)]
 
 def get_wind(c):
     if c=='.':
@@ -45,6 +62,28 @@ def get_grid(lines):
 
     return grid
 
+def get_grid_loop(grid):
+    xl = len(grid.grid[0])
+    yl = len(grid.grid)
+    ll = xl * yl
+
+    print("get_grid_loop")
+    grid_loop=[]
+    for i in range(ll):
+        g = copy.deepcopy(grid.grid)
+        grid_loop.append(g)
+        grid.tick()
+        if i % 10 == 0:
+            print('.', end='')
+            sys.stdout.flush()
+
+
+
+
+
+    print("GRIDLOOP done \n\n")
+    return grid_loop
+
 def cp(c):
     cc = c.copy()
     d = {
@@ -57,13 +96,16 @@ def cp(c):
     return(d[cc.pop()])
 
 class Grid:
-    __slots__ = ['grid', 'x', 'y', 'trail']
+    __slots__ = ['grid', 'grid_static', 'x', 'y', 'wx', 'wy', 'time_nodes']
 
     def __init__(self, grid):
         self.grid = grid
-        self.trail = []
+        self.grid_static = copy.deepcopy(grid)
         self.x = 0
         self.y = -1
+        self.wx = len(self.grid[0])
+        self.wy = len(self.grid)
+        self.time_nodes = [[TimeNode(0, -1, 0)]]
 
     def print(self):
         for y,gl in enumerate(self.grid):
@@ -115,6 +157,83 @@ class Grid:
 
         self.grid = ng
 
+
+    def can_move_time(self, y, x, time):
+        # Look right for left winds
+        xr = (x + time) % self.wx
+        if Wind.LEFT in self.grid_static[y][xr]:
+            return False
+
+        # Look left for right winds
+        xl = (x - time) % self.wx
+        if Wind.RIGHT in self.grid_static[y][xl]:
+            return False
+
+        # Look up for down winds
+        yu = (y - time) % self.wy
+        if Wind.DOWN in self.grid_static[yu][x]:
+            return False
+
+        # Look down ...
+        yd = (y+time) % self.wy
+        if Wind.UP in self.grid_static[yd][x]:
+            return False
+
+        return True
+
+
+    def can_moves3(self, node, time):
+        can = []
+
+        if node.y == self.wy and node.x == self.wx:
+            can.add(Wind.EXIT)
+            return can
+
+        if node.x < self.wx-1 and self.can_move_time(node.y, node.x + 1, time):
+            can.append(Wind.RIGHT)
+
+        if node.x > 0 and self.can_move_time(node.y, node.x - 1, time):
+            can.append(Wind.LEFT)
+
+
+        if node.y > 0 and self.can_move_time(node.y -1, node.x, time):
+            can.append(Wind.UP)
+
+        if node.y < self.wy-1 and self.can_move_time(node.y +1, node.x, time):
+            can.append(Wind.DOWN)
+
+        if self.can_move_time(node.y, node.x, time) or node.y == -1:
+            can.append(Wind.WAIT)
+
+        return can
+
+
+    def can_moves2(self, time):
+        can = set()
+        if self.y == len(self.grid_static)-1 and self.x == len(self.grid_static[0])-1:
+            can.add(Wind.EXIT)
+            return can
+
+        if self.y < len(self.grid_static)-1 and self.can_move_time(self.y + 1, self.x, time):
+            can.add(Wind.DOWN)
+            if self.y == -1:
+                return can
+
+        if self.x < len(self.grid_static[0])-1 and self.can_move_time(self.y, self.x + 1, time):
+            can.add(Wind.RIGHT)
+
+
+        if self.x > 0 and self.can_move_time(self.y, self.x - 1, time):
+            can.add(Wind.LEFT)
+
+        if self.y > 0 and self.can_move_time(self.y - 1, self.x, time):
+            can.add(Wind.UP)
+
+        if self.can_move_time(self.y, self.x, time) or self.y == -1:
+            can.add(Wind.WAIT)
+
+        return sorted(list(can), key=lambda e:e.value)
+
     def can_moves(self):
         can = set()
         if self.y == len(self.grid)-1 and self.x == len(self.grid[0])-1:
@@ -136,14 +255,73 @@ class Grid:
         if self.y > 0 and len(self.grid[self.y-1][self.x]) == 0:
             can.add(Wind.UP)
 
-        if len(self.grid[self.y][self.x]) == 0:
+        if len(self.grid[self.y][self.x]) == 0 or self.y == -1:
             can.add(Wind.WAIT)
 
         return sorted(list(can), key=lambda e:e.value)
 
+
+
+    def move2(self, count = 0):
+        while True:
+            submoves = []
+            for node in self.time_nodes[-1]:
+                #print("======= self.time_nodes[-1][0].y", self.time_nodes[-1][0].y, "node", nxx.y)
+                moves = self.can_moves3(node, len(self.time_nodes))
+
+                for move in moves:
+                    if move == Wind.DOWN:
+                        submoves.append(TimeNode(node.x, node.y +1))
+                        print("DOWN, ", end = "")
+
+                    elif move == Wind.RIGHT:
+                        submoves.append(TimeNode(node.x+1, node.y))
+                        print("RIGHT, ", end = "")
+
+                    elif move == Wind.UP:
+                        submoves.append(TimeNode(node.x, node.y-1))
+                        print("UP, ", end = "")
+
+
+                    elif move == Wind.LEFT:
+                        submoves.append(TimeNode(node.x-1, node.y))
+                        print("LEFT, ", end = "")
+
+
+                    elif move == Wind.WAIT:
+                        if len(self.time_nodes) == 0 or node.y > -1:
+                            submoves.append(TimeNode(node.x, node.y))
+                            print("WAIT, ", end = "")
+
+                    elif move == Wind.EXIT:
+                        print("EXIT after moves: ", len(self.time_nodes)+1)
+                        sys.exit(0)
+                    else:
+                        assert False, "WTF"
+
+            self.time_nodes.append(submoves)
+            for sn in submoves:
+                print("x:", sn.x, "y:", sn.y, "---> ", end='')
+            print()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def move(self, count = 1):
         global mincount
-        moves = self.can_moves()
+        # self.grid = grid_at_time(count)
+
+        moves = self.can_moves2(count)
         if Wind.EXIT in moves:
             mincount = min(mincount, count)
             return count
@@ -160,26 +338,26 @@ class Grid:
             grid = copy.deepcopy(self)
             if m == Wind.DOWN:
                 grid.y += 1
-                grid.tick()
+                #grid.tick()
                 counts.append(grid.move(count+1))
 
             elif m == Wind.RIGHT:
                 grid.x += 1
-                grid.tick()
+                #grid.tick()
                 counts.append(grid.move(count+1))
 
             elif m == Wind.UP:
                 grid.y -= 1
-                grid.tick()
+                #grid.tick()
                 counts.append(grid.move(count+1))
 
             elif m == Wind.LEFT:
                 grid.x -= 1
-                grid.tick()
+                #grid.tick()
                 counts.append(grid.move(count+1))
 
             elif m == Wind.WAIT:
-                grid.tick()
+                #grid.tick()
                 counts.append(grid.move(count+1))
 
             else:
@@ -191,18 +369,17 @@ class Grid:
         count = 0
 
         self.tick()
-        count = self.move()
+        count = self.move2()
 
         print("Count:", count)
 
 def test():
+    global grid_loop
     lines = util.readlinesf('test_input')
     g = Grid(get_grid(lines))
+
+    # grid_loop = get_grid_loop(g)
+
     g.run()
 
 test()
-
-
-
-
-
