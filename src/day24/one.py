@@ -11,7 +11,10 @@ from enum import Enum
 lines = []
 grid = []
 
-Wind = Enum('Wind', ['UP', 'DOWN', 'LEFT', 'RIGHT', 'WAIT'])
+Wind = Enum('Wind', ['UP', 'DOWN', 'LEFT', 'RIGHT', 'WAIT', 'EXIT'])
+
+MAXCOUNT = 999999999
+mincount = 4444
 
 def get_wind(c):
     if c=='.':
@@ -114,9 +117,9 @@ class Grid:
 
     def can_moves(self):
         can = set()
-        if self.y == len(self.grid)-1 and self.x == len(self.grid[0]):
-            set.add("EXIT")
-            return
+        if self.y == len(self.grid)-1 and self.x == len(self.grid[0])-1:
+            can.add(Wind.EXIT)
+            return can
 
         if self.y < len(self.grid)-1 and len(self.grid[self.y+1][self.x]) == 0:
             can.add(Wind.DOWN)
@@ -138,24 +141,23 @@ class Grid:
 
         return can
 
-    def move(self, count = 0, grid=None):
-
-        grid = copy.deepcopy(self)
-
-        moves = grid.can_moves()
-        if 'EXIT' in moves:
-            print("Done?")
+    def move(self, count = 1):
+        global mincount
+        moves = self.can_moves()
+        if Wind.EXIT in moves:
+            mincount = min(mincount, count)
             return count
 
-        if count > 32:
-            return count
+        if count > mincount:
+            return mincount
 
         if len(moves) == 0:
-            return 999999999
+            return MAXCOUNT
 
         counts = []
 
         for m in moves:
+            grid = copy.deepcopy(self)
             if m == Wind.DOWN:
                 grid.y += 1
                 grid.tick()
@@ -189,9 +191,8 @@ class Grid:
         count = 0
 
         self.tick()
-        self.print()
-        self.move()
-        count +=1
+        count = self.move()
+
         print("Count:", count)
 
 def test():
