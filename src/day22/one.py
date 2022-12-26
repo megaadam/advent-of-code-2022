@@ -56,10 +56,20 @@ class Nav():
 
         assert False, "WTF 1"
 
+    def row_free(self):
+        return not Cell.BLOCK in self.grid[self.y]
+
+    def col_free(self, ymin, ymax):
+        for y in range(ymin, ymax + 1):
+            if self.grid[y][self.x] == Cell.BLOCK:
+                return False
+
+        return True
+
     def rowlen_minmax(self):
         xmin = min(self.grid[self.y].index(Cell.OK), self.grid[self.y].index(Cell.BLOCK))
         rev = self.grid[self.y][::-1]
-        xmax = len(self.grid[self.y]) - min(rev.index(Cell.OK), rev.index(Cell.BLOCK))
+        xmax = len(self.grid[self.y]) - min(rev.index(Cell.OK), rev.index(Cell.BLOCK)) -1
 
         return xmax - xmin +1, xmin, xmax
 
@@ -85,10 +95,16 @@ class Nav():
     def run_move(self, move):
         if move.dy == 0:
             rowlen, xmin, xmax = self.rowlen_minmax()
-            d = move.dist % rowlen
+            if self.row_free():
+                d = move.dist % rowlen
+            else:
+                d = move.dist
         else:
             collen, ymin, ymax = self.collen_minmax()
-            d = move.dist % collen
+            if self.col_free(ymin, ymax):
+                d = move.dist % collen
+            else:
+                d = move.dist
 
         for _ in range(d):
                 if move.dy == 0:
