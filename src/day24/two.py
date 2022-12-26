@@ -62,13 +62,20 @@ def cp(c):
     return(d[cc.pop()])
 
 class Grid:
-    __slots__ = ['grid', 'wx', 'wy', 'time_nodes']
+    __slots__ = ['grid', 'wx', 'wy', 'time_nodes', 'goalx']
 
-    def __init__(self, grid):
+    def __init__(self, grid, start='top'):
         self.grid = grid
         self.wx = len(self.grid[0])
         self.wy = len(self.grid)
-        self.time_nodes = [[(0, -1, 0)]]
+        if start == 'top':
+            self.time_nodes = [[(0, -1, 0)]]
+            self.goalx = self.wx -1
+        elif start == 'end':
+            self.time_nodes = [[(self.wx-1, self.wy, 0)]]
+            self.goalx = 0
+        else:
+            assert False, "WTF"
 
     def print(self):
         for y,gl in enumerate(self.grid):
@@ -110,15 +117,23 @@ class Grid:
     def can_moves(self, node, time):
         can = []
 
-        if node.y == self.wy -1 and node.x == self.wx-1:
-            can.append(Wind.EXIT)
-            return can
+        if self.goalx == self.wx-1:
+            if node.y == self.wy -1 and node.x == self.wx-1:
+                can.append(Wind.EXIT)
+                return can
 
-        if node.x < self.wx-1 and self.can_move_time(node.y, node.x + 1, time) and node.y >= 0:
-            can.append(Wind.RIGHT)
+        if self.goalx == 0:
+            if node.y == 0 and node.x == 0:
+                can.append(Wind.EXIT)
+                return can
 
-        if node.x > 0 and self.can_move_time(node.y, node.x - 1, time) and node.y >= 0:
-            can.append(Wind.LEFT)
+
+        if node.y < self.wy and node.y >= 0:
+            if node.x < self.wx-1 and self.can_move_time(node.y, node.x + 1, time):
+                can.append(Wind.RIGHT)
+
+            if node.x > 0 and self.can_move_time(node.y, node.x - 1, time):
+                can.append(Wind.LEFT)
 
 
         if node.y > 0 and self.can_move_time(node.y -1, node.x, time):
@@ -127,7 +142,7 @@ class Grid:
         if node.y < self.wy-1 and self.can_move_time(node.y +1, node.x, time):
             can.append(Wind.DOWN)
 
-        if self.can_move_time(node.y, node.x, time) or node.y == -1:
+        if node.y == -1 or node.y == self.wy or self.can_move_time(node.y, node.x, time):
             can.append(Wind.WAIT)
 
         return can
@@ -157,23 +172,30 @@ class Grid:
                         submoves.add((node.x, node.y,ti))
 
                     elif move == Wind.EXIT:
-                        print("EXIT after moves: ", count)
-                        sys.exit(0)
+                        return count
                     else:
                         assert False, "WTF"
 
             self.time_nodes[0] =submoves
             count += 1
 
-    def run(self):
-        count = 0
-        count = self.move()
+    def run(self, count):
+        count = self.move(count)
         print("Count:", count)
+        return count
 
 def test():
     global grid_loop
-    lines = util.readlinesf('input')
-    g = Grid(get_grid(lines))
-    g.run()
+    lines = util.readlinesf('test_input')
+
+    g = Grid(get_grid(lines), 'top')
+    c=g.run(1)
+
+    g = Grid(get_grid(lines), 'end')
+    c=g.run(c+1)
+
+    g = Grid(get_grid(lines), 'top')
+    c=g.run(c+1)
+
 
 test()
