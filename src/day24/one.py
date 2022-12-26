@@ -189,10 +189,10 @@ class Grid:
             can.append(Wind.EXIT)
             return can
 
-        if node.x < self.wx-1 and self.can_move_time(node.y, node.x + 1, time):
+        if node.x < self.wx-1 and self.can_move_time(node.y, node.x + 1, time) and node.y >= 0:
             can.append(Wind.RIGHT)
 
-        if node.x > 0 and self.can_move_time(node.y, node.x - 1, time):
+        if node.x > 0 and self.can_move_time(node.y, node.x - 1, time) and node.y >= 0:
             can.append(Wind.LEFT)
 
 
@@ -262,14 +262,14 @@ class Grid:
 
 
 
-    def move2(self, count = 0):
+    def move2(self, count = 1):
         while True:
             submoves = set()
             for nt in self.time_nodes[-1]:
                 node = TimeNode(nt[0], nt[1])
-                ti = len(self.time_nodes)
+                ti = count
                 #print("======= self.time_nodes[-1][0].y", self.time_nodes[-1][0].y, "node", nxx.y)
-                moves = self.can_moves3(node, len(self.time_nodes))
+                moves = self.can_moves3(node, count)
 
                 for move in moves:
                     if move == Wind.DOWN:
@@ -289,29 +289,17 @@ class Grid:
                         submoves.add((node.x-1, node.y,ti))
 
                     elif move == Wind.WAIT:
-                        if len(self.time_nodes) == 0 or node.y > -1:
-                            # submoves.add(TimeNode(node.x, node.y))
-                            submoves.add((node.x, node.y,ti))
+                        # submoves.add(TimeNode(node.x, node.y))
+                        submoves.add((node.x, node.y,ti))
 
                     elif move == Wind.EXIT:
-                        print("EXIT after moves: ", len(self.time_nodes))
+                        print("EXIT after moves: ", count)
                         sys.exit(0)
                     else:
                         assert False, "WTF"
 
-            self.time_nodes.append(submoves)
-
-
-
-
-
-
-
-
-
-
-
-
+            self.time_nodes[0] =submoves
+            count += 1
 
     def move(self, count = 1):
         global mincount
@@ -371,7 +359,7 @@ class Grid:
 
 def test():
     global grid_loop
-    lines = util.readlinesf('test_input')
+    lines = util.readlinesf('input')
     g = Grid(get_grid(lines))
 
     # grid_loop = get_grid_loop(g)
