@@ -3,6 +3,7 @@ sys.path.append('../util')
 import util
 
 from enum import Enum
+from dataclasses import dataclass
 
 # https://adventofcode.com/2022/day/22
 
@@ -12,7 +13,11 @@ moves = []
 
 Cell = Enum('Cell', ['NONE', 'OK', 'BLOCK'])
 
-
+@dataclass
+class Move:
+    dx: int
+    dy: int
+    dist: int
 
 dirval = {
     (1, 0):  0,
@@ -30,6 +35,9 @@ def turn_move(x, y, turn):
         x = 0
     else:
         x = y * left - y*right
+        y = 0
+
+    return x, y
 
 
 class Nav():
@@ -50,7 +58,7 @@ class Nav():
         assert False, "WTF 1"
 
 
-    def final_password1(self):
+    def final_password(self):
         p = 1000 * (self.y + 1) + 4 * (self.x + 1) + dirval(self.x, self.y)
         print("Final password: ", p)
 
@@ -64,8 +72,6 @@ class Nav():
             self.apply_x(xm)
 
 
-
-
 def charcell(c):
     if c == ' ':
         return Cell.NONE
@@ -77,17 +83,20 @@ def charcell(c):
     assert False, 'WTF'
 
 def get_moves(moveline):
-    num = ""
+    num = ''
     moves = []
     dx = 1
     dy = 0
-    for m in moveline:
+    for c in moveline:
         try:
-            val = int(num + m)
-            num += m
+            val = int(num + c)
+            num += c
         except ValueError:
-            turn = m
-            dx, dy = turnmove[dx, dy, turn]
+            turn = c
+            moves.append(Move(dx, dy, val))
+            dx, dy = turn_move(dx, dy, turn)
+            num = ''
+            val = 0
 
     return moves
 
@@ -110,6 +119,8 @@ def get_gridmoves(lines):
 def test():
     global grid, moves
     grid, moves = get_gridmoves(lines)
+    m1 = get_moves('11L22L33L44LLL')
+    m2 = get_moves('11R22R33R44RRR')
     pass
 
 lines = util.readlinesf_ns('test_input')
