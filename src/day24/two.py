@@ -186,7 +186,7 @@ class Grid:
 
 def test():
     global grid_loop
-    lines = util.readlinesf('test_input')
+    lines = util.readlinesf('input')
 
     g = Grid(get_grid(lines), 'top')
     c=g.run(1)
