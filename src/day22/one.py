@@ -108,11 +108,11 @@ class Nav():
 
         for _ in range(d):
                 if move.dy == 0:
-                    xtry = ((self.x + move.dx) % rowlen) + xmin
+                    xtry = ((self.x + move.dx - xmin) % rowlen) + xmin
                     ytry = self.y
                 else:
                     xtry = self.x
-                    ytry = ((self.y + move.dy) % collen) + ymin
+                    ytry = ((self.y + move.dy - ymin) % collen) + ymin
 
                 if self.grid[ytry][xtry] == Cell.BLOCK:
                     break
@@ -121,8 +121,11 @@ class Nav():
                 self.y = ytry
 
     def run(self, moves):
+        self.pgrid()
         for move in moves:
+            # self.pmove(move)
             self.run_move(move)
+            # self.pgrid()
 
         self.dx = moves[-1].dx
         self.dy = moves[-1].dy
@@ -130,6 +133,48 @@ class Nav():
     def final_password(self):
         p = 1000 * (self.y + 1) + 4 * (self.x + 1) + dirval[self.dx, self.dy]
         print("Final password: ", p)
+
+    def pmove(self, move):
+        dx = move.dx
+        dy = move.dy
+
+        for _ in range(4):
+            if dy == 0:
+                if dx==1:
+                    print('>', end='')
+                else:
+                    print('<', end='')
+
+            else:
+                if dy == -1:
+                    print('^', end='')
+                else:
+                    print('v', end='')
+
+        print('  ', move.dist)
+
+    def pgrid(self):
+        for y in range(self.y + 3):
+            for x, c in enumerate(self.grid[y]):
+                #c = self.grid[y][x]
+                if x == self.x and y == self.y:
+                    print('*', end ='')
+                elif c == Cell.NONE:
+                    print(' ', end='')
+
+                elif c == Cell.OK:
+                    print('.', end='')
+
+                elif c == Cell.BLOCK:
+                    print('#', end='')
+
+                else:
+                    assert False, 'WTF'
+            print()
+
+        print()
+
+
 
 def charcell(c):
     if c == ' ':
@@ -162,7 +207,7 @@ def get_moves(moveline):
     return moves
 
 def get_gridmoves(lines):
-    lens = [len(l) for l in lines]
+    lens = [len(l) for l in lines[:-2]]
     maxlen = max(lens)
 
     grid = []
@@ -186,6 +231,6 @@ def test():
     nav.run(moves)
     nav.final_password()
 
-lines = util.readlinesf_ns('test_input')
+lines = util.readlinesf_ns('input')
 
 test()
